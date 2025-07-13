@@ -3,12 +3,15 @@ import { join } from 'path'
 import { readdir, stat } from 'fs/promises'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { parseFile as parseMusicFile } from 'music-metadata'
 
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
+    minHeight: 670,
+    minWidth: 900,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -66,7 +69,7 @@ app.whenReady().then(() => {
       const files = await readdir(folderPath)
       const audioExtensions = ['.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac']
 
-      const audioFiles = []
+      const audioFiles = new Map()
       for (const file of files) {
         const filePath = join(folderPath, file)
         const stats = await stat(filePath)
@@ -74,11 +77,28 @@ app.whenReady().then(() => {
         if (stats.isFile()) {
           const ext = file.toLowerCase().slice(file.lastIndexOf('.'))
           if (audioExtensions.includes(ext)) {
-            audioFiles.push({
+            const metadata = await parseMusicFile(filePath)
+            const picture = metadata.common.picture?.[0]
+
+            let cover = null
+
+            if (picture) {
+              const mime = picture.format || 'image/jpeg'
+
+              const buffer = Buffer.from(picture.data)
+              const b64 = buffer.toString('base64')
+
+              cover = `data:${mime};base64,${b64}`
+              console.log(cover)
+            }
+
+            audioFiles.set(filePath, {
               name: file,
+              folderPath,
               path: filePath,
               size: stats.size,
-              lastModified: stats.mtime
+              lastModified: stats.mtime,
+              cover
             })
           }
         }
@@ -87,7 +107,7 @@ app.whenReady().then(() => {
       return audioFiles
     } catch (error) {
       console.error('Error reading audio files:', error)
-      return []
+      return new Map()
     }
   })
 
@@ -106,7 +126,7 @@ app.whenReady().then(() => {
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }

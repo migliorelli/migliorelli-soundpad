@@ -21,7 +21,8 @@
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
     "electron-updater": "^6.3.9",
-    "lemonadejs": "^5.0.9"
+    "lemonadejs": "^5.0.9",
+    "music-metadata": "^11.6.0"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config": "^2.0.0",

@@ -3,8 +3,11 @@
   bottom: 0;
   left: 0;
   background-color: var(--color-background-soft);
+
   width: 100%;
   padding: 1rem;
+  height: 6rem;
+  max-height: 6rem;
 
   display: grid;
   grid-template-columns: repeat(5, 1fr);

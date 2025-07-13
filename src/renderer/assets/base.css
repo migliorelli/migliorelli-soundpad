@@ -5,6 +5,8 @@
   --color-text: #f1f1f1;
   --color-primary: #007bff;
   --color-primary-soft: #0056b3;
+
+  color-scheme: dark;
 }
 
 *,
